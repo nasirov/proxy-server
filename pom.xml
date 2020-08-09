@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>nasirov.yv</groupId>
+  <artifactId>proxy-server</artifactId>
+  <version>0.1.0</version>
+
+  <name>proxy-server</name>
+  <description>Http proxy server</description>
+
+  <properties>
+    <start-class>nasirov.yv.proxy.server.SocketServerApplication</start-class>
+    <java.version>1.8</java.version>
+    <lombok.version>1.18.10</lombok.version>
+    <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
+    <commons-lang3.version>3.9</commons-lang3.version>
+    <slf4j-api.version>1.7.30</slf4j-api.version>
+    <logback.version>1.2.3</logback.version>
+    <okhttp.version>2.7.5</okhttp.version>
+    <httpcore.version>4.4.13</httpcore.version>
+    <guava.version>28.2-jre</guava.version>
+    <commons-compress.version>1.20</commons-compress.version>
+    <commons-io.version>2.6</commons-io.version>
+    <dec>0.1.2</dec>
+    <docker-maven-version>0.31.0</docker-maven-version>
+    <argLine>-Dfile.encoding=UTF-8</argLine>
+    <docker.buildArg.JAR_FILE>target/${project.build.finalName}.jar</docker.buildArg.JAR_FILE>
+    <org.jacoco>0.8.3</org.jacoco>
+    <org.sonarsource.scanner.maven>3.6.0.1398</org.sonarsource.scanner.maven>
+    <org.eluder.coveralls>4.3.0</org.eluder.coveralls>
+    <maven-assembly-plugin.version>3.3.0</maven-assembly-plugin.version>
+  </properties>
+
+  <dependencies>
+
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+      <version>${lombok.version}</version>
+      <optional>true</optional>
+    </dependency>
+
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>${slf4j-api.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+      <version>${logback.version}</version>
+    </dependency>
+
+
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+      <version>${commons-lang3.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.squareup.okhttp</groupId>
+      <artifactId>okhttp</artifactId>
+      <version>${okhttp.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpcore</artifactId>
+      <version>${httpcore.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-compress</artifactId>
+      <version>${commons-compress.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+      <version>${commons-io.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.brotli</groupId>
+      <artifactId>dec</artifactId>
+      <version>${dec}</version>
+    </dependency>
+
+  </dependencies>
+
+  <build>
+
+    <plugins>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>${maven-compiler-plugin.version}</version>
+        <configuration>
+          <source>${java.version}</source>
+          <target>${java.version}</target>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <version>${maven-assembly-plugin.version}</version>
+        <configuration>
+          <archive>
+            <manifest>
+              <mainClass>${start-class}</mainClass>
+            </manifest>
+          </archive>
+          <descriptorRefs>jar-with-dependencies</descriptorRefs>
+          <appendAssemblyId>false</appendAssemblyId>
+        </configuration>
+        <executions>
+          <execution>
+            <id>create-archive</id>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+
+      <plugin>
+        <groupId>io.fabric8</groupId>
+        <artifactId>docker-maven-plugin</artifactId>
+        <version>${docker-maven-version}</version>
+        <configuration>
+          <images>
+            <image>
+              <alias>heroku</alias>
+              <name>registry.heroku.com/custom-socket-proxy-server/web</name>
+              <build>
+                <contextDir>${project.basedir}</contextDir>
+              </build>
+            </image>
+            <image>
+              <alias>docker</alias>
+              <name>nasirov/proxy-server</name>
+              <build>
+                <contextDir>${project.basedir}</contextDir>
+              </build>
+            </image>
+          </images>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <version>${org.jacoco}</version>
+        <executions>
+          <execution>
+            <id>default-prepare-agent</id>
+            <goals>
+              <goal>prepare-agent</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>default-report</id>
+            <phase>prepare-package</phase>
+            <goals>
+              <goal>report</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <excludes>
+            <exclude>**/exception/**</exclude>
+            <exclude>**/utils/**</exclude>
+            <exclude>**/SocketServerApplication**</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.sonarsource.scanner.maven</groupId>
+        <artifactId>sonar-maven-plugin</artifactId>
+        <version>${org.sonarsource.scanner.maven}</version>
+      </plugin>
+
+      <plugin>
+        <groupId>org.eluder.coveralls</groupId>
+        <artifactId>coveralls-maven-plugin</artifactId>
+        <version>${org.eluder.coveralls}</version>
+      </plugin>
+
+    </plugins>
+
+  </build>
+
+</project>

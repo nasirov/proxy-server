@@ -1,0 +1,28 @@
+branches:
+  only:
+    - master
+
+sudo: required
+
+services:
+  - docker
+
+language: java
+jdk: openjdk8
+
+script: mvn clean install
+
+cache:
+  directories:
+    - $HOME/.m2
+
+after_success:
+  - sh ./travis/heroku-deploy.sh
+  - mvn coveralls:report
+  - mvn sonar:sonar -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.projectKey=$SONAR_PROJECTKEY -Dsonar.organization=$SONAR_ORGANIZATION -Dsonar.login=$SONAR_LOGIN
+
+notifications:
+  email:
+    recipients:
+      - yurqaa@mail.ru
+    on_failure: always
