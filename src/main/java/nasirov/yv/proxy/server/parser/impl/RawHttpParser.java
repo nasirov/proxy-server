@@ -5,7 +5,6 @@ import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Request.Builder;
 import com.squareup.okhttp.RequestBody;
 import com.squareup.okhttp.Response;
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -20,7 +19,6 @@ import nasirov.yv.proxy.server.exception.RawHttpParseException;
 import nasirov.yv.proxy.server.parser.RawHttpParserI;
 import nasirov.yv.proxy.server.utils.CommonConst;
 import nasirov.yv.proxy.server.utils.HttpStatus;
-import org.apache.commons.compress.compressors.CompressorInputStream;
 import org.apache.commons.compress.compressors.CompressorStreamFactory;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -66,8 +64,10 @@ public class RawHttpParser implements RawHttpParserI {
 			}
 		}
 		validateUrlAndMethod(url, method);
+		RequestBody requestBody = buildRequestBody(body, headers.get(HttpHeaders.CONTENT_TYPE));
+		validateRequestBody(method, requestBody);
 		Builder builder = new Builder().url(url)
-				.method(method, buildRequestBody(body, headers.get(HttpHeaders.CONTENT_TYPE)));
+				.method(method, requestBody);
 		headers.forEach(builder::addHeader);
 		return builder.build();
 	}
@@ -112,12 +112,18 @@ public class RawHttpParser implements RawHttpParserI {
 
 	private RequestBody buildRequestBody(StringBuilder body, String contentType) {
 		String bodyValue = body.toString();
-		return StringUtils.isBlank(bodyValue) ? null : RequestBody.create(MediaType.parse(contentType), bodyValue);
+		return StringUtils.isBlank(bodyValue) || StringUtils.isBlank(contentType) ? null : RequestBody.create(MediaType.parse(contentType), bodyValue);
 	}
 
 	private void validateUrlAndMethod(String url, String method) {
 		if (url == null || method == null) {
 			throw new RawHttpParseException("url or method is null");
+		}
+	}
+
+	private void validateRequestBody(String method, RequestBody requestBody) {
+		if ("POST".equals(method) && requestBody == null) {
+			throw new RawHttpParseException("empty body for POST request");
 		}
 	}
 
@@ -132,7 +138,7 @@ public class RawHttpParser implements RawHttpParserI {
 						.contains(HttpHeaders.TRANSFER_ENCODING))
 				.filter(x -> !x.getKey()
 						.contains(HttpHeaders.CONTENT_ENCODING))
-				.map(x -> x.getKey() + ": " + String.join(";", x.getValue()))
+				.map(x -> x.getKey() + ": " + String.join(",", x.getValue()))
 				.collect(Collectors.joining(CommonConst.RAW_HTTP_DELIMITER));
 	}
 
@@ -149,33 +155,30 @@ public class RawHttpParser implements RawHttpParserI {
 		try {
 			result = decodeResponseBody(response.body()
 					.byteStream(), response.header(HttpHeaders.CONTENT_ENCODING));
-		} catch (IOException e) {
+		} catch (Exception e) {
 			log.error("Exception has occurred during building raw response body", e);
 		}
 		return result;
 	}
 
 	private String decodeResponseBody(InputStream inputStream, String contentEncoding) {
-		String result = StringUtils.EMPTY;
+		InputStream tempInputStream = inputStream;
 		if (contentEncoding != null) {
 			try {
-				CompressorInputStream compressorInputStream = CompressorStreamFactory.getSingleton()
+				tempInputStream = CompressorStreamFactory.getSingleton()
 						.createCompressorInputStream(contentEncoding, inputStream);
-				result = inputStreamToString(compressorInputStream);
 			} catch (Exception e) {
 				log.error("Exception has occurred during decompressing raw response body with content-encoding [{}]", contentEncoding, e);
 			}
-		} else {
-			result = inputStreamToString(inputStream);
 		}
-		return result;
+		return inputStreamToString(tempInputStream);
 	}
 
 	private String inputStreamToString(InputStream inputStream) {
 		String result = StringUtils.EMPTY;
 		try {
 			result = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
-		} catch (IOException e) {
+		} catch (Exception e) {
 			log.error("Exception has occurred during converting input stream to string", e);
 		}
 		return result;
