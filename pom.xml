@@ -37,6 +37,7 @@
     <powermock-module-junit4.version>1.7.4</powermock-module-junit4.version>
     <powermock-api-mockito.version>1.7.4</powermock-api-mockito.version>
     <system-lambda.version>1.0.0</system-lambda.version>
+    <wiremock.version>2.27.1</wiremock.version>
   </properties>
 
   <dependencies>
@@ -122,6 +123,13 @@
       <groupId>com.github.stefanbirkner</groupId>
       <artifactId>system-lambda</artifactId>
       <version>${system-lambda.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>com.github.tomakehurst</groupId>
+      <artifactId>wiremock</artifactId>
+      <version>${wiremock.version}</version>
       <scope>test</scope>
     </dependency>
 
