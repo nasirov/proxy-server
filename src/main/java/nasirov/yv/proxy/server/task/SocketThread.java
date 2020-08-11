@@ -44,16 +44,9 @@ public class SocketThread implements Runnable {
 		try (BufferedReader socketInput = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 				BufferedWriter socketOutput = new BufferedWriter(new OutputStreamWriter(new BufferedOutputStream(socket.getOutputStream()),
 						StandardCharsets.UTF_8))) {
-			String rawHttp = getRawHttp(socketInput);
-			log.info("Received a msg from client:\n{}", rawHttp);
-			String rawHttpResponse;
-			if (proxyAuthService.isAuthorized(rawHttp)) {
-				Request externalRequest = rawHttpParser.parseFromRawHttp(rawHttp);
-				Response externalResponse = httpClient.executeRequest(externalRequest);
-				rawHttpResponse = rawHttpParser.parseToRawHttp(externalResponse);
-			} else {
-				rawHttpResponse = PROXY_UNAUTHORIZED_RESPONSE;
-			}
+			String rawHttpRequest = getRawHttpRequest(socketInput);
+			log.info("Received a msg from client:\n{}", rawHttpRequest);
+			String rawHttpResponse = getRawHttpResponse(rawHttpRequest);
 			log.info("Response:\n{}", rawHttpResponse);
 			socketOutput.write(rawHttpResponse);
 			socketOutput.flush();
@@ -63,11 +56,23 @@ public class SocketThread implements Runnable {
 		log.info("Stop SocketThread.");
 	}
 
-	private String getRawHttp(BufferedReader input) throws IOException {
+	private String getRawHttpRequest(BufferedReader input) throws IOException {
 		StringBuilder stringBuilder = new StringBuilder();
 		while (input.ready()) {
 			stringBuilder.append((char) input.read());
 		}
 		return stringBuilder.toString();
+	}
+
+	private String getRawHttpResponse(String rawHttpRequest) {
+		String rawHttpResponse;
+		if (proxyAuthService.isAuthorized(rawHttpRequest)) {
+			Request externalRequest = rawHttpParser.parseFromRawHttp(rawHttpRequest);
+			Response externalResponse = httpClient.executeRequest(externalRequest);
+			rawHttpResponse = rawHttpParser.parseToRawHttp(externalResponse);
+		} else {
+			rawHttpResponse = PROXY_UNAUTHORIZED_RESPONSE;
+		}
+		return rawHttpResponse;
 	}
 }
