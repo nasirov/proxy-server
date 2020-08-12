@@ -15,12 +15,12 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
-import java.util.concurrent.ForkJoinPool;
 import lombok.SneakyThrows;
 import nasirov.yv.proxy.server.parser.RawHttpParserI;
 import nasirov.yv.proxy.server.service.HttpClientServiceI;
 import nasirov.yv.proxy.server.service.ProxyAuthenticationServiceI;
 import nasirov.yv.proxy.server.utils.HttpStatus;
+import nasirov.yv.proxy.server.utils.ThreadPoolUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -31,7 +31,7 @@ import org.mockito.runners.MockitoJUnitRunner;
  * Created by nasirov.yv
  */
 @RunWith(MockitoJUnitRunner.class)
-public class SocketActionTest {
+public class SocketThreadTest {
 
 	@Mock
 	private Socket socket;
@@ -46,9 +46,10 @@ public class SocketActionTest {
 	private ProxyAuthenticationServiceI proxyAuthenticationService;
 
 	@InjectMocks
-	private SocketAction socketAction;
+	private SocketThread socketThread;
 
 	@Test
+	@SneakyThrows
 	public void shouldReturnSocketResponseForAuthenticatedRequest() {
 		//given
 		String rawHttpSocketRequest = "raw http request";
@@ -66,13 +67,14 @@ public class SocketActionTest {
 		mockRawHttpParser(rawHttpSocketRequest, request, rawHttpResponse, response);
 		mockHttpClient(request, response);
 		//when
-		ForkJoinPool.commonPool()
-				.invoke(socketAction);
+		ThreadPoolUtils.EXECUTOR_SERVICE.submit(socketThread)
+				.get();
 		//then
 		assertEquals(rawHttpResponse, getActualSocketResponse(socketOutput));
 	}
 
 	@Test
+	@SneakyThrows
 	public void shouldReturnSocketResponseForUnauthenticatedRequest() {
 		//given
 		String rawHttpSocketRequest = "raw http request";
@@ -80,20 +82,21 @@ public class SocketActionTest {
 		mockSocket(rawHttpSocketRequest, socketOutput);
 		mockProxyAuthenticationService(false, rawHttpSocketRequest);
 		//when
-		ForkJoinPool.commonPool()
-				.invoke(socketAction);
+		ThreadPoolUtils.EXECUTOR_SERVICE.submit(socketThread)
+				.get();
 		//then
 		assertEquals("HTTP/1.1 407 Proxy Authentication Required\r\nProxy-Authenticate: Basic realm=\"Access to internal site\"\r\n\r\nProxy "
 				+ "Authentication Required\r\n", getActualSocketResponse(socketOutput));
 	}
 
 	@Test
+	@SneakyThrows
 	public void shouldFailOnException() {
 		//given
 		mockException();
 		//when
-		ForkJoinPool.commonPool()
-				.invoke(socketAction);
+		ThreadPoolUtils.EXECUTOR_SERVICE.submit(socketThread)
+				.get();
 		//then
 		verify(proxyAuthenticationService, never()).isAuthenticated(any(String.class));
 	}

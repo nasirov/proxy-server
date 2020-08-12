@@ -1,0 +1,15 @@
+{
+  "request": {
+    "url": "/foo",
+    "method": "GET",
+    "headers": {
+      "User-Agent": {
+        "equalTo": "Foo-Bar"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "body": "body"
+  }
+}

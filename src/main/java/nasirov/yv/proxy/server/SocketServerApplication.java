@@ -1,8 +1,9 @@
 package nasirov.yv.proxy.server;
 
-import java.util.concurrent.ForkJoinTask;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import nasirov.yv.proxy.server.task.SocketServerAction;
+import nasirov.yv.proxy.server.task.SocketServerThread;
+import nasirov.yv.proxy.server.utils.ThreadPoolUtils;
 
 /**
  * Created by nasirov.yv
@@ -10,9 +11,11 @@ import nasirov.yv.proxy.server.task.SocketServerAction;
 @Slf4j
 public class SocketServerApplication {
 
+	@SneakyThrows
 	public static void main(String[] args) {
 		log.info("Trying to start Proxy Socket Server...");
-		ForkJoinTask.invokeAll(new SocketServerAction(getEntProp("PORT"), getEntProp("BACKLOG")));
+		ThreadPoolUtils.EXECUTOR_SERVICE.submit(new SocketServerThread(getEntProp("PORT"), getEntProp("BACKLOG")))
+				.get();
 		log.info("Proxy Socket Server was stopped.");
 	}
 

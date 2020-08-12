@@ -10,7 +10,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
-import java.util.concurrent.RecursiveAction;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import nasirov.yv.proxy.server.parser.RawHttpParserI;
@@ -22,7 +21,7 @@ import nasirov.yv.proxy.server.service.ProxyAuthenticationServiceI;
  */
 @Slf4j
 @RequiredArgsConstructor
-public class SocketAction extends RecursiveAction {
+public class SocketThread implements Runnable {
 
 	private static final String PROXY_UNAUTHENTICATED_RESPONSE = "HTTP/1.1 407 Proxy Authentication Required\r\nProxy-Authenticate: Basic "
 			+ "realm=\"Access to internal site\"\r\n\r\nProxy Authentication Required\r\n";
@@ -36,8 +35,8 @@ public class SocketAction extends RecursiveAction {
 	private final ProxyAuthenticationServiceI proxyAuthenticationService;
 
 	@Override
-	public void compute() {
-		log.info("Trying to start SocketAction...");
+	public void run() {
+		log.info("Trying to start SocketThread...");
 		try (BufferedReader socketInput = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 				BufferedWriter socketOutput = new BufferedWriter(new OutputStreamWriter(new BufferedOutputStream(socket.getOutputStream()),
 						StandardCharsets.UTF_8))) {
@@ -48,9 +47,9 @@ public class SocketAction extends RecursiveAction {
 			socketOutput.write(rawHttpResponse);
 			socketOutput.flush();
 		} catch (Exception e) {
-			log.error("Exception has occurred", e);
+			log.error("Exception has occurred in SocketThread", e);
 		}
-		log.info("Stop SocketAction.");
+		log.info("Stop SocketThread.");
 	}
 
 	private String getRawHttpRequest(BufferedReader input) throws IOException {
