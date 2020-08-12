@@ -14,6 +14,7 @@
   <properties>
     <start-class>nasirov.yv.proxy.server.SocketServerApplication</start-class>
     <java.version>1.8</java.version>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <lombok.version>1.18.10</lombok.version>
     <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
     <commons-lang3.version>3.9</commons-lang3.version>
