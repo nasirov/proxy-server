@@ -27,7 +27,7 @@ public class SocketServerThread implements Runnable {
 			while (true) {
 				log.info("Waiting for a socket...");
 				Socket socket = server.accept();
-				log.info("A socket was accepted. Trying to execute thread pool...");
+				log.info("A socket was accepted. Trying to execute via thread pool...");
 				ThreadPoolUtils.EXECUTOR_SERVICE.submit(new SocketThread(socket,
 						HttpClientService.getInstance(),
 						RawHttpParser.getInstance(),

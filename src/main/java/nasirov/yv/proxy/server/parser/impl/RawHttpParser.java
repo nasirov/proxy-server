@@ -18,8 +18,8 @@ import lombok.extern.slf4j.Slf4j;
 import nasirov.yv.proxy.server.exception.RawHttpParseException;
 import nasirov.yv.proxy.server.parser.RawHttpParserI;
 import nasirov.yv.proxy.server.utils.CommonConst;
+import nasirov.yv.proxy.server.utils.CustomCompressorStreamFactory;
 import nasirov.yv.proxy.server.utils.HttpStatus;
-import org.apache.commons.compress.compressors.CompressorStreamFactory;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHeaders;
@@ -165,8 +165,8 @@ public class RawHttpParser implements RawHttpParserI {
 		InputStream tempInputStream = inputStream;
 		if (contentEncoding != null) {
 			try {
-				tempInputStream = CompressorStreamFactory.getSingleton()
-						.createCompressorInputStream(contentEncoding, inputStream);
+				tempInputStream = CustomCompressorStreamFactory.getInstance()
+						.createCompressorInputStream(contentEncoding, inputStream, false);
 			} catch (Exception e) {
 				log.error("Exception has occurred during decompressing raw response body with content-encoding [{}]", contentEncoding, e);
 			}

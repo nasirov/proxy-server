@@ -16,6 +16,7 @@ public class SocketServerApplication {
 		log.info("Trying to start Proxy Socket Server...");
 		ThreadPoolUtils.EXECUTOR_SERVICE.submit(new SocketServerThread(getEntProp("PORT"), getEntProp("BACKLOG")))
 				.get();
+		ThreadPoolUtils.EXECUTOR_SERVICE.shutdown();
 		log.info("Proxy Socket Server was stopped.");
 	}
 
