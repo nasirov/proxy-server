@@ -37,7 +37,7 @@
     <mockito-core.version>3.4.6</mockito-core.version>
     <powermock-module-junit4.version>1.7.4</powermock-module-junit4.version>
     <powermock-api-mockito.version>1.7.4</powermock-api-mockito.version>
-    <system-lambda.version>1.0.0</system-lambda.version>
+    <system-lambda.version>1.1.0</system-lambda.version>
     <wiremock.version>2.27.1</wiremock.version>
   </properties>
 
