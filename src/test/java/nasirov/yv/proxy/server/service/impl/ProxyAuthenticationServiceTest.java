@@ -19,8 +19,8 @@ public class ProxyAuthenticationServiceTest {
 	@Before
 	@SneakyThrows
 	public void setUp() {
-		proxyAuthenticationService = SystemLambda.withEnvironmentVariable("PROXY_CREDENTIALS", "dGVzdDp0ZXN0")
-				.execute(ProxyAuthenticationService::getInstance);
+		SystemLambda.withEnvironmentVariable("PROXY_CREDENTIALS", "dGVzdDp0ZXN0")
+				.execute(() -> proxyAuthenticationService = ProxyAuthenticationService.getInstance());
 	}
 
 	@Test

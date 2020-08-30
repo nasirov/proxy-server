@@ -173,20 +173,12 @@
         </executions>
       </plugin>
 
-
       <plugin>
         <groupId>io.fabric8</groupId>
         <artifactId>docker-maven-plugin</artifactId>
         <version>${docker-maven-version}</version>
         <configuration>
           <images>
-            <image>
-              <alias>heroku</alias>
-              <name>registry.heroku.com/custom-socket-proxy-server/web</name>
-              <build>
-                <contextDir>${project.basedir}</contextDir>
-              </build>
-            </image>
             <image>
               <alias>docker</alias>
               <name>nasirov/proxy-server</name>
