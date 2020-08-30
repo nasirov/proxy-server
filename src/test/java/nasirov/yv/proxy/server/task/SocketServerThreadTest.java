@@ -67,7 +67,6 @@ public class SocketServerThreadTest {
 		//then
 		String result = getResponse(clientSocket);
 		out.close();
-		System.out.println("result:\n" + result);
 		assertTrue(result.contains("HTTP/1.1 200 OK"));
 		assertTrue(result.contains("body"));
 	}
