@@ -52,24 +52,24 @@ public class SocketServerThreadTest {
 	@Test
 	@SneakyThrows
 	public void shouldReturnOkResponse() {
+		//given
+		Socket clientSocket = new Socket("localhost", SOCKET_SERVER_PORT);
+		//when
+		BufferedWriter out = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
 		SystemLambda.withEnvironmentVariable("PROXY_CREDENTIALS", PROXY_CREDENTIALS)
 				.execute(() -> {
-					//given
-					Socket clientSocket = new Socket("localhost", SOCKET_SERVER_PORT);
-					//when
-					BufferedWriter out = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
 					out.write(
 							"GET http://localhost:" + WIRE_MOCK_PORT + "/foo HTTP/1.1\r\nUser-Agent: Foo-Bar\r\nProxy-Authorization: Basic " + PROXY_CREDENTIALS
 									+ "\r\n");
 					out.flush();
 					waitForAnotherThread();
-					//then
-					String result = getResponse(clientSocket);
-					System.out.println("result:\n" + result);
-					assertTrue(result.contains("HTTP/1.1 200 OK"));
-					assertTrue(result.contains("body"));
-					out.close();
 				});
+		//then
+		String result = getResponse(clientSocket);
+		out.close();
+		System.out.println("result:\n" + result);
+		assertTrue(result.contains("HTTP/1.1 200 OK"));
+		assertTrue(result.contains("body"));
 	}
 
 	@Test
